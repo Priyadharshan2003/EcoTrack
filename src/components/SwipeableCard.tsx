@@ -266,7 +266,7 @@ export const SwipeableCard = React.memo(function SwipeableCard({
       </Animated.View>
     </GestureDetector>
   );
-}
+});
 
 /**
  * Styles (CRED inspired)
