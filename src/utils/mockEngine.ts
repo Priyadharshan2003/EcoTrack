@@ -91,7 +91,8 @@ export function initializeMockData(options?: {
 
   const alreadyInitialized =
     typeof window !== 'undefined' &&
-    localStorage.getItem(STORAGE_KEY) === 'true';
+    typeof window.localStorage !== 'undefined' &&
+    window.localStorage.getItem(STORAGE_KEY) === 'true';
 
   const hasMockData =
     pendingActivities.some(a => a.id.startsWith(ID_PREFIX)) ||
@@ -133,8 +134,8 @@ export function initializeMockData(options?: {
   addPendingActivities(freshActivities);
 
   // Persist initialization flag
-  if (typeof window !== 'undefined') {
-    localStorage.setItem(STORAGE_KEY, 'true');
+  if (typeof window !== 'undefined' && typeof window.localStorage !== 'undefined') {
+    window.localStorage.setItem(STORAGE_KEY, 'true');
   }
 
   if (debug) {
@@ -146,8 +147,8 @@ export function initializeMockData(options?: {
  * Reset mock data (useful for testing)
  */
 export function resetMockData(debug = false) {
-  if (typeof window !== 'undefined') {
-    localStorage.removeItem(STORAGE_KEY);
+  if (typeof window !== 'undefined' && typeof window.localStorage !== 'undefined') {
+    window.localStorage.removeItem(STORAGE_KEY);
   }
 
   if (debug) {
