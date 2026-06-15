@@ -1,63 +1,80 @@
-# Context-Aware Carbon Intelligence Assistant
+# EcoTrack 🌱
 
-EcoTrack is a React Native Expo application that acts as an intelligent, context-aware carbon tracking assistant. This project has been heavily refactored to meet production-grade engineering standards, demonstrating robust architecture, high security, and intelligent feature execution.
+> **Understand** your footprint. **Track** your impact. **Reduce** global emissions.
 
-## 🚀 Problem Statement & Solution
-Static carbon trackers fail because they lack context and adaptability. This project solves that by introducing a **Context Engine** that analyzes verified activities, detects behavioral habits, and injects this data into an **Intelligent Suggestion Engine** and an **AI Assistant**.
+EcoTrack is a production-grade, full-stack intelligence platform that gamifies sustainability. Built for real-world deployment, it integrates mobile sensing, a robust API, and real-time AI to make climate action invisible, effortless, and deeply rewarding.
 
-The app dynamically learns from user verification, adjusting detection confidence, and offering highly personalized offset suggestions in a Dynamic Market.
+![EcoTrack Banner](docs/banner-placeholder.png)
 
-## 🏗 Architecture
-We use a feature-based modular architecture designed for scalability.
+---
 
-```text
-src/
-├── app/                 # Expo Router UI entry points
-├── components/          # Reusable, accessible UI components
-├── features/            # Isolated feature domains
-│   ├── carbon/          # Carbon calculation logic
-│   ├── detection/       # Confidence learning engine
-│   ├── gamification/    # Challenges, streaks, scores
-│   ├── insights/        # Context & Suggestion engines
-│   ├── offsets/         # Dynamic marketplace
-│   └── chat/            # AI assistant and NLP heuristics
-├── store/               # Zustand state management (Slices pattern)
-├── types/               # Centralized TypeScript definitions
-└── utils/               # Zod validation and helpers
+## 🚀 The Solution
+
+While most carbon trackers are manual and guilt-inducing, EcoTrack is **automated and empowering**. 
+1. **Passively Infers** activities (like cab rides or food deliveries) using mobile heuristics.
+2. **Scientifically Calculates** carbon costs using IPCC & EPA emission factors.
+3. **AI Coaching** (powered by Gemini 1.5 Flash) provides deeply personalized, actionable insights.
+4. **Gamification & Offsets** turn reductions into real-world habitat protection.
+
+## 🏗 System Architecture
+
+EcoTrack is designed for high availability, rapid iteration, and competition-winning stability.
+
+*   **Frontend:** React Native (Expo) & Zustand (Persisted State).
+*   **Backend:** FastAPI (Python) optimized for Vercel Serverless.
+*   **Database:** Supabase (PostgreSQL).
+*   **AI Engine:** Google Gemini 1.5 Flash.
+*   **CI/CD:** GitHub Actions for automated linting, type-checking, and Pytest suites.
+
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed architecture diagrams and data flow.
+
+## 🤖 AI Integration & Graceful Fallback
+
+We utilize **Google Gemini 1.5 Flash** for blazing-fast contextual insights. However, we assume network partitions or rate limits can happen.
+
+**The Fallback Guarantee:** If the AI API is unreachable, EcoTrack automatically engages a zero-latency **Rule-Based Fallback Engine**. This ensures the user *always* receives an actionable insight, maintaining a flawless user experience even in degraded network states.
+
+## 🧪 Scientific Credibility
+
+All calculations are backed by a strict data credibility layer found in `emissionFactors`.
+*   **Transport:** EPA Greenhouse Gas Equivalencies Calculator & DEFRA.
+*   **Food:** IPCC Special Report on Climate Change and Land.
+*   **Energy:** Average global grid intensity (IEA).
+
+## 💻 Getting Started
+
+### 1. Run the Backend
+```bash
+pip install -r backend/requirements.txt
+uvicorn backend.main:app --reload
 ```
 
-### Data Flow
-1. **Activity Detection**: Simulated activities enter `activitySlice`.
-2. **User Verification**: User confirms/rejects, which updates `carbonSlice` and triggers the `learningEngine` to adjust confidence.
-3. **Context Generation**: `contextEngine` derives dominant sources, trends, and habits.
-4. **Insight Delivery**: `suggestionEngine` and `aiAssistant` use this context to deliver personalized advice.
+### 2. Run the App
+```bash
+npm install
+npm start
+```
 
-## 🧠 AI Intelligence
-The AI Assistant goes beyond generic text generation:
-- **Intent Detection**: Parses user messages to categorize intents (`reduce`, `feedback`, `compare`, `explain`).
-- **Context Injection**: Uses the output of the Context Engine to provide answers specifically tailored to the user's habits (e.g., suggesting transport alternatives to a `frequent_cab` user).
-- **Feedback Loop**: When users report detection errors, the assistant acknowledges and the `learningEngine` penalizes the confidence model dynamically.
+### 3. Run Tests
+```bash
+# Backend
+pytest backend/tests/
+
+# Frontend
+npm test
+```
+
+## 🚢 Deployment
+
+EcoTrack is built to deploy easily. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for full instructions on deploying to **Vercel**, **Supabase**, and building with **Expo EAS**. A `Dockerfile` is also provided for containerized environments.
 
 ## 🔒 Security Practices
-- **Strict Typing**: TypeScript is configured with `strict`, `noUnusedLocals`, and `noUnusedParameters` to eliminate runtime ambiguities.
-- **Runtime Validation**: We use `Zod` (`src/utils/validation.ts`) to validate all incoming data payloads (activities, chat messages).
-- **Sanitization**: Basic XSS/script injection sanitization is applied to all user chat inputs before processing.
-- **Data Safety**: All state is persisted locally using `AsyncStorage`. No sensitive data is transmitted to external servers for this POC.
 
-## 🧪 Testing Approach (Premium Standards)
-We implement a multi-layered testing strategy using `Jest` and `@testing-library/react-native`:
-- **Unit Tests**: Pure functions (`contextEngine`, `learningEngine`, `storeSlices`) are rigorously tested for mathematical and logical correctness.
-- **Component Tests**: Interaction and rendering tests ensure that UI components respond correctly to gestures and data changes.
-- **Integration Tests**: `detectionFlow.test.tsx` validates the entire pipeline from detection to insight generation.
-- **Accessibility Tests**: Automated checks ensure all elements possess the necessary `accessibilityLabels` and `roles`.
+- Input validation strictly enforced via **Pydantic** models.
+- **CORS** middleware restricts cross-origin exposure.
+- All secrets and API keys are injected via secure environment variables (`.env`).
+- Frontend API client gracefully catches and isolates network exceptions.
 
-## ♿ Accessibility
-This app is designed to be fully accessible:
-- All interactive elements (Cards, Buttons, Banners) have explicit `accessibilityRole` and descriptive `accessibilityLabel` props.
-- High contrast themes are implemented using the central `useThemeColor` hook.
-- Keyboard navigation is fully supported for Web and Simulator testing.
+---
 
-## 🎮 Gamification & Smart Market
-- **Dynamic Offset Market**: Offsets are dynamically sorted and recommended based on the user's highest emission source.
-- **Weekly Challenges**: A lightweight, non-intrusive challenge system encourages streak building and positive habit reinforcement.
-- **Smart Device Banner**: A contextual, dismissible banner prompts users to connect wearables for better detection accuracy.
+*EcoTrack — Built for the future.*

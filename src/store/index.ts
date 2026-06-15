@@ -22,7 +22,7 @@ export const useStore = create<StoreState>()(
       ...createOffsetSlice(...a),
     }),
     {
-      name: 'ecotrack-storage-v8', // bumped version
+      name: 'ecotrack-storage-v9', // bumped version for backend upgrade
       storage: createJSONStorage(() => AsyncStorage),
     }
   )

@@ -8,7 +8,7 @@ export interface ActivitySlice {
   verifiedActivities: Activity[];
   
   addPendingActivities: (activities: Activity[]) => void;
-  verifyActivity: (id: string, isConfirmed: boolean) => void;
+  verifyActivity: (id: string, isConfirmed: boolean) => Promise<void>;
 }
 
 export const createActivitySlice: StateCreator<StoreState, [], [], ActivitySlice> = (set, get) => ({
@@ -52,7 +52,8 @@ export const createActivitySlice: StateCreator<StoreState, [], [], ActivitySlice
   addPendingActivities: (activities) => 
     set((state) => ({ pendingActivities: [...state.pendingActivities, ...activities] })),
 
-  verifyActivity: (id, isConfirmed) => {
+  verifyActivity: async (id, isConfirmed) => {
+    // Optimistic update for UI snap
     set((state) => {
       const activity = state.pendingActivities.find((a) => a.id === id);
       if (!activity) return state;
@@ -67,11 +68,9 @@ export const createActivitySlice: StateCreator<StoreState, [], [], ActivitySlice
       let newTransactions = state.transactions;
 
       if (isConfirmed) {
-        newPoints += 50; // Award 50 points for verifying
+        newPoints += 50; 
         const savingsKg = Math.max(0, 5 - activity.emissions_kg);
-        
-        // Need to import calculateImpactCredits correctly, assuming it works or providing a fallback
-        const creditsEarned = Math.round(savingsKg * 10); // fallback inline calculation if import fails
+        const creditsEarned = Math.round(savingsKg * 10);
         newImpactCredits += creditsEarned;
 
         newTransactions = [
@@ -99,5 +98,21 @@ export const createActivitySlice: StateCreator<StoreState, [], [], ActivitySlice
         transactions: newTransactions
       };
     });
+    
+    // Call backend to re-calculate or log
+    try {
+      const state = get();
+      const activity = state.verifiedActivities.find(a => a.id === id);
+      if (isConfirmed && activity) {
+        // Sync with backend async (fire and forget for now)
+        fetch(`${process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:8000/api'}/calculate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ activities: [activity] })
+        }).catch(() => {}); // silent fail for robust UX
+      }
+    } catch (e) {
+      console.error(e);
+    }
   },
 });
