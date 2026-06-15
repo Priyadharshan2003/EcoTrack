@@ -12,7 +12,6 @@ export function DailyInsightFlow() {
   const {
     step,
     setStep,
-    answers,
     setAnswers,
     calculatedEmissions,
     handleNext,
