@@ -48,13 +48,14 @@ export function WeeklyWrap() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      {/* @ts-expect-error - Radix UI types issue */}
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border-emerald-500/20 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
-          <Sparkles className="w-4 h-4" />
-          <span className="hidden sm:inline">Weekly Wrap</span>
-        </Button>
-      </DialogTrigger>
+      <DialogTrigger
+        render={
+          <Button variant="outline" size="sm" className="gap-2 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border-emerald-500/20 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+            <Sparkles className="w-4 h-4" />
+            <span className="hidden sm:inline">Weekly Wrap</span>
+          </Button>
+        }
+      />
       <DialogContent className="sm:max-w-md bg-background/95 backdrop-blur-xl border-border/50">
         <DialogHeader>
           <DialogTitle className="text-center text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-emerald-600">
