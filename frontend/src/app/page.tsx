@@ -18,12 +18,8 @@ export default function Dashboard() {
   const { suggestions, confirmSuggestion, dismissSuggestion } = usePassiveSuggestions();
 
   useEffect(() => {
-    if (typeof window !== "undefined" && !profile.hasCompletedOnboarding) {
-      router.push("/onboarding");
-    }
+    // Optional: Only redirect to onboarding if specifically required
   }, [profile.hasCompletedOnboarding, router]);
-
-  if (!profile.hasCompletedOnboarding) return null;
 
   return (
     <div className="max-w-7xl mx-auto space-y-8 pb-20">
