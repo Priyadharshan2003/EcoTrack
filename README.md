@@ -1,4 +1,6 @@
 🌱 Carbon Footprint Awareness Platform
+> A behavior-shaping system that invisibly guides people to live lower-carbon lives
+
 CI License: MIT
 
 Virtual PromptWars — Challenge 3. A web app that helps individuals understand, track, and reduce their personal carbon footprint through simple inputs and personalized, AI-generated insights.
