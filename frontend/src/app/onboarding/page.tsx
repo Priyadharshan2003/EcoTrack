@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { useCarbonStore } from "@/lib/store";
+import { useCarbonStore } from "@/store/useCarbonStore";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Leaf, Car, Train, Salad, Pizza, ChevronRight } from "lucide-react";
 
@@ -45,7 +45,9 @@ export default function Onboarding() {
   const [answers, setAnswers] = useState<Record<string, string>>({});
 
   const handleSelect = (optionId: string) => {
-    const stepId = steps[currentStep].id;
+    const currentStepObj = steps[currentStep];
+    if (!currentStepObj) return;
+    const stepId = currentStepObj.id;
     setAnswers(prev => ({ ...prev, [stepId]: optionId }));
     
     if (currentStep < steps.length - 1) {
@@ -63,6 +65,10 @@ export default function Onboarding() {
   };
 
   const step = steps[currentStep];
+
+  if (!step) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4 overflow-hidden relative">

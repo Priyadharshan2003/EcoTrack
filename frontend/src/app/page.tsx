@@ -6,7 +6,7 @@ import { DailyInsightFlow } from "@/components/daily-insight-flow";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Leaf, Zap, Flame, HeartPulse, Bike, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
-import { useCarbonStore } from "@/lib/store";
+import { useCarbonStore } from "@/store/useCarbonStore";
 import { usePassiveSuggestions } from "@/hooks/usePassiveSuggestions";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";

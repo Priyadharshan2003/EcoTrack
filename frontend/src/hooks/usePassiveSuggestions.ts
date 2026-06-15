@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useCarbonStore } from '@/lib/store';
+import { useCarbonStore } from '@/store/useCarbonStore';
 
 export interface Suggestion {
   id: string;

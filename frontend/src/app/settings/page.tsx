@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { useCarbonStore } from "@/lib/store";
+import { useCarbonStore } from "@/store/useCarbonStore";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 

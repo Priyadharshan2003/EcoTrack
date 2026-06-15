@@ -1,64 +1,31 @@
 "use client";
 
-import { useState } from "react";
+
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, Car, Utensils, Zap, CheckCircle2, ArrowRight } from "lucide-react";
 import { GlassCard } from "./ui/glass-card";
 import { Button } from "./ui/button";
-import { useCarbonStore } from "@/lib/store";
-import { calculateTransportEmissions, calculateDietEmissions } from "@/lib/emissionFactors";
+import { useAIFlow } from "@/hooks/useAIFlow";
 import { toast } from "sonner";
 
-type Step = "intro" | "commute" | "food" | "additional" | "summary";
-
 export function DailyInsightFlow() {
-  const [step, setStep] = useState<Step>("intro");
-  const [answers, setAnswers] = useState({
-    commute: "",
-    food: "",
-    additional: ""
-  });
-  const [calculatedEmissions, setCalculatedEmissions] = useState(0);
-  const { setEmissions, totalEmissions, addCredits } = useCarbonStore();
-
-  const handleNext = (key: keyof typeof answers, value: string, nextStep: Step) => {
-    setAnswers(prev => ({ ...prev, [key]: value }));
-    setStep(nextStep);
-  };
-
-  const handleFinish = () => {
-    // Basic fallback calculation rule engine based on Gemini logic
-    let dailyEmissions = 0;
-    
-    // Commute fallback calculation
-    if (answers.commute === "Car") dailyEmissions += calculateTransportEmissions("car_petrol", 15);
-    else if (answers.commute === "Metro") dailyEmissions += calculateTransportEmissions("metro", 15);
-    else if (answers.commute === "Bike" || answers.commute === "Walk" || answers.commute === "Stayed home") dailyEmissions += 0;
-    
-    // Food fallback
-    if (answers.food === "Ordered") dailyEmissions += calculateDietEmissions("meat_heavy");
-    else if (answers.food === "Home-cooked") dailyEmissions += calculateDietEmissions("vegetarian");
-    else if (answers.food === "Skipped") dailyEmissions += 0;
-
-    // Additional
-    if (answers.additional === "Cab") dailyEmissions += calculateTransportEmissions("car_petrol", 10);
-    else if (answers.additional === "Flight") dailyEmissions += calculateTransportEmissions("flight_short_haul", 500);
-
-    setCalculatedEmissions(parseFloat(dailyEmissions.toFixed(2)));
-    
-    // Update store
-    setEmissions(totalEmissions + parseFloat(dailyEmissions.toFixed(2)));
-    addCredits(10);
-    
-    setStep("summary");
-  };
+  const {
+    step,
+    setStep,
+    answers,
+    setAnswers,
+    calculatedEmissions,
+    handleNext,
+    handleFinish,
+    resetFlow
+  } = useAIFlow();
 
   const closeFlow = () => {
     toast.success("Daily impact recorded", {
       description: "Gemini has successfully updated your footprint.",
       icon: <CheckCircle2 className="h-4 w-4 text-primary" />,
     });
-    setStep("intro"); // Reset or hide in a real app, keeping it visible for demo
+    resetFlow();
   };
 
   return (

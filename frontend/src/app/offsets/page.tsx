@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useCarbonStore } from "@/lib/store";
+import { useCarbonStore } from "@/store/useCarbonStore";
 import { GlassCard } from "@/components/ui/glass-card";
 import { TreePine, Wind, Sun, ShieldCheck } from "lucide-react";
 

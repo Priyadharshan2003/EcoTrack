@@ -6,11 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Bot, User, SendHorizontal } from "lucide-react";
 
-type Message = {
-  id: number;
-  role: "user" | "ai";
-  content: string;
-};
+import { api, Message } from "@/lib/api";
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([
@@ -33,25 +29,15 @@ export default function ChatPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/insights", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: newMessages }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        const aiMsg: Message = {
-          id: Date.now() + 1,
-          role: "ai",
-          content: data.reply,
-        };
-        setMessages((prev) => [...prev, aiMsg]);
-      } else {
-        throw new Error("Failed to fetch insight");
-      }
+      const data = await api.chat.getInsights(newMessages);
+      const aiMsg: Message = {
+        id: Date.now() + 1,
+        role: "ai",
+        content: data.reply,
+      };
+      setMessages((prev) => [...prev, aiMsg]);
     } catch (error) {
-      console.error(error);
+      console.error("Chat Error:", error);
       const errorMsg: Message = {
         id: Date.now() + 1,
         role: "ai",

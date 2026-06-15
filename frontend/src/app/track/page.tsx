@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle2, Car, MapPin, Zap, Utensils, ArrowRight, Activity } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { useCarbonStore } from "@/lib/store";
+import { useCarbonStore } from "@/store/useCarbonStore";
 
 export default function TrackPage() {
   const [inferredConfirmed, setInferredConfirmed] = useState(false);

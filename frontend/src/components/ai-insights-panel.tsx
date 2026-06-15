@@ -3,8 +3,10 @@
 import { motion } from "framer-motion";
 import { Sparkles, Car, Zap, Loader2, ArrowRight } from "lucide-react";
 import { GlassCard } from "./ui/glass-card";
-import { useCarbonStore } from "@/lib/store";
+import { useCarbonStore } from "@/store/useCarbonStore";
 import { useEffect, useState } from "react";
+
+import { api } from "@/lib/api";
 
 interface Insight {
   id: string;
@@ -30,27 +32,33 @@ export function AIInsightsPanel() {
 
   useEffect(() => {
     const fetchInsights = async () => {
+      if (totalEmissions === 0) return;
+      
       setLoading(true);
       try {
-        const response = await fetch("/api/ai/insights", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            userData: { totalEmissions },
-            userProfile: profile
-          }),
-        });
-        const data = await response.json();
+        const data = await api.chat.getDashboardInsights(totalEmissions, profile);
         
-        // Transform the insights to look like contextual behavioral tips
-        const transformedInsights = data.insights.map((i: { description: string } & Record<string, unknown>) => ({
-          ...i,
-          // If the AI returns generic titles, we forcefully shape them for the OS-level feel.
-          title: "Behavior Pattern Identified",
-          description: i.description.includes("cab") || i.description.includes("car") 
-            ? "You tend to use ride-hailing 3x per week. Reducing 1 trip saves ~18kg CO₂ monthly."
-            : i.description
-        }));
+        const transformedInsights: Insight[] = data.insights.map((i: unknown, idx: number) => {
+          const insight = i as Record<string, unknown>;
+          
+          let desc = "Insight generated.";
+          if (typeof insight.description === "string") {
+            desc = insight.description.includes("cab") || insight.description.includes("car") 
+              ? "You tend to use ride-hailing 3x per week. Reducing 1 trip saves ~18kg CO₂ monthly."
+              : insight.description;
+          }
+
+          return {
+            id: typeof insight.id === "string" ? insight.id : `ai-generated-${idx}`,
+            title: "Behavior Pattern Identified",
+            description: desc,
+            savings: typeof insight.savings === "string" ? insight.savings : "10kg CO₂",
+            icon: typeof insight.icon === "string" ? insight.icon : "Sparkles",
+            color: typeof insight.color === "string" ? insight.color : "text-primary",
+            bg: typeof insight.bg === "string" ? insight.bg : "bg-primary/10",
+            border: typeof insight.border === "string" ? insight.border : "border-primary/20",
+          };
+        });
         
         setInsights(transformedInsights.slice(0, 2)); // Limit to top 2 for Apple whitespace feel
       } catch (error) {
