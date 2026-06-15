@@ -1,5 +1,6 @@
 import { Platform, StyleSheet, View, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useUser, useClerk } from '@clerk/expo';
 import { useStore } from '../../store';
 import { ThemedView } from '../../components/themed-view';
 import { ThemedText } from '../../components/themed-text';
@@ -91,6 +92,8 @@ const statPillStyles = StyleSheet.create({
 // ─── Screen ──────────────────────────────────────────────────────────────────
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
+  const { user } = useUser();
+  const { signOut } = useClerk();
 
   // Store
   const ecoScore          = useStore((s) => s.ecoScore);
@@ -227,6 +230,15 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[styles.scroll, { paddingBottom: 120 + insets.bottom }]}
       >
+        {/* ── User Profile Header ─────────────────────────────────────── */}
+        <View style={styles.userHeaderRow}>
+          <ThemedText style={styles.userEmail}>
+            {user?.primaryEmailAddress?.emailAddress || 'User'}
+          </ThemedText>
+          <TouchableOpacity onPress={() => signOut()} style={styles.signOutBtn}>
+            <ThemedText style={styles.signOutText}>Sign Out</ThemedText>
+          </TouchableOpacity>
+        </View>
 
         {/* ── Dynamic Island ─────────────────────────────────────── */}
         <View style={styles.islandRow}>
@@ -907,6 +919,31 @@ const styles = StyleSheet.create({
     height: '100%',
     backgroundColor: '#FFB800',
     borderRadius: 3,
+  },
+
+  // ── User Header ──
+  userHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Spacing.md,
+    paddingHorizontal: Spacing.sm,
+  },
+  userEmail: {
+    fontSize: 14,
+    color: '#888',
+    fontWeight: '500',
+  },
+  signOutBtn: {
+    backgroundColor: 'rgba(255, 69, 58, 0.15)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  signOutText: {
+    color: '#FF453A',
+    fontSize: 12,
+    fontWeight: '700',
   },
 
   // ── Device banner ──

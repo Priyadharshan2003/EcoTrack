@@ -1,6 +1,7 @@
-import { Tabs } from 'expo-router';
+import { Tabs, Redirect } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
+import { useAuth } from '@clerk/expo';
 import { useActiveTheme, useThemeColor } from '../../hooks/useThemeColor';
 import { initializeMockData } from '../../utils/mockEngine';
 import { Home, CheckSquare, User, Globe } from 'lucide-react-native';
@@ -15,6 +16,16 @@ export default function AppLayout() {
   useEffect(() => {
     initializeMockData();
   }, []);
+
+  const { isLoaded, isSignedIn } = useAuth();
+
+  if (!isLoaded) {
+    return null;
+  }
+
+  if (!isSignedIn) {
+    return <Redirect href="/(auth)/sign-in" />;
+  }
 
   return (
     <>
