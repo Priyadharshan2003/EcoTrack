@@ -1,56 +1,26 @@
-# EcoTrack System Architecture
+# EcoTrack Platform Architecture
 
-This document describes the production-grade architecture of the EcoTrack platform.
-
-## 1. System Design Diagram
-
+## System Diagram
 ```mermaid
 graph TD
-    subgraph Client [Expo Mobile App]
-        UI[React Native UI]
-        Store[Zustand Local Store]
-        ClientAPI[API Client]
-        UI --> Store
-        Store --> ClientAPI
-    end
-
-    subgraph Vercel_Platform [Vercel Deployment]
-        subgraph FastAPI_Backend [Python Serverless]
-            Router[API Routes]
-            Fallback[Rule-Based Fallback]
-            AI_Engine[Gemini Integration]
-            Scientific[Emission Factors Core]
-        end
-        ClientAPI -->|REST| Router
-        Router --> Scientific
-        Router --> AI_Engine
-        AI_Engine -->|Failure| Fallback
-    end
-
-    subgraph External_Services [Third-Party APIs]
-        Gemini[Google Gemini 1.5 Flash]
-        Supabase[(Supabase PostgreSQL)]
-    end
-
-    AI_Engine -->|gRPC / REST| Gemini
-    Router -->|asyncpg / supabase-py| Supabase
+    Client[Next.js Client Components] --> Server[Next.js API Routes]
+    Client --> Clerk[Clerk Auth]
+    Server --> Clerk
+    Server --> Supabase[(Supabase PostgreSQL)]
+    Server --> Gemini[Google Gemini AI]
 ```
 
-## 2. Core Modules
+## Data Flow
+1. **Authentication**: Users authenticate via Clerk on the client. The session token is passed to Next.js API Routes.
+2. **Database Operations**: API Routes use the Supabase JS client to insert and retrieve data (`users`, `carbon_entries`, `offset_purchases`).
+3. **AI Contextualization**: User's recent `carbon_entries` are fetched from Supabase and injected into the Gemini prompt via `@google/genai`.
+4. **Gamification**: The `users` table tracks `points`. Points are updated dynamically whenever a `carbon_entry` is added or an offset is purchased.
 
-### 2.1 React Native Frontend (Expo)
-*   **Framework:** Expo SDK, React Native
-*   **State Management:** Zustand with `persist` middleware for offline capabilities and caching.
-*   **Data Fetching:** Custom API client layer (`apiClient.ts`) interacting with backend.
+## Database Schema (Supabase)
+- **users**: id (PK), email, name, total_emissions, points
+- **carbon_entries**: id (PK), user_id (FK), activity_type, value, co2_amount, date
+- **offset_purchases**: id (PK), user_id (FK), project_name, amount_kg, cost, purchased_at
 
-### 2.2 FastAPI Backend (Vercel)
-*   **Framework:** FastAPI
-*   **Architecture:** Clean architecture separating routes (`api/`), core configuration (`core/`), database models (`models/`), and business logic (`services/`).
-*   **Deployment:** Serverless deployment via Vercel using `@vercel/python`.
-
-### 2.3 AI & Fallback Engine
-*   **Primary:** Google Gemini 1.5 Flash via `google-generativeai`.
-*   **Fallback:** If the API fails, a rule-based engine (`services/fallback.py`) guarantees a valid, actionable response based on scientific emission factors, ensuring 100% uptime for the user experience.
-
-### 2.4 Data Credibility Layer
-*   Uses scientific emission factors sourced from the IPCC, EPA, and DEFRA to ensure calculations are authoritative and mathematically sound.
+## AI Logic & Fallback
+The `POST /api/insights` route attempts to call Gemini via `@google/genai`.
+If the Gemini API fails or times out, the backend will catch the error and return static, rule-based recommendations based on the user's highest emission category (e.g., "Consider reducing flights" if flight emissions > 50%).

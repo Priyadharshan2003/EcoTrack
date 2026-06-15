@@ -1,17 +1,25 @@
-# Build stage for FastAPI
-FROM python:3.11-slim
-
+# Install dependencies only when needed
+FROM node:18-alpine AS deps
 WORKDIR /app
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci
 
-# Install dependencies
-COPY backend/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Rebuild the source code only when needed
+FROM node:18-alpine AS builder
+WORKDIR /app
+COPY frontend/ .
+COPY --from=deps /app/node_modules ./node_modules
+RUN npm run build
 
-# Copy backend code
-COPY backend/ ./backend/
+# Production image, copy all the files and run next
+FROM node:18-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV production
 
-# Expose port
-EXPOSE 8000
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
 
-# Run uvicorn
-CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
+EXPOSE 3000
+ENV PORT 3000
+CMD ["node", "server.js"]
