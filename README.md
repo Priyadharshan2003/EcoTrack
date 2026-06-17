@@ -31,6 +31,40 @@ CarbonTrack is a production-grade carbon footprint tracker that helps users log 
 | E2E Tests | Playwright |
 | Deployment | Vercel |
 
+## Architecture
+
+```mermaid
+graph TD
+    subgraph Client [Client Side]
+        Browser[Web Browser / User]
+        UI[React Components & UI]
+    end
+
+    subgraph Vercel [Vercel Deployment]
+        Middleware[Next.js Middleware]
+        RSC[React Server Components]
+        API[Server Actions & API Routes]
+    end
+
+    subgraph Supabase [Supabase Backend]
+        Auth[GoTrue Auth Service]
+        DB[(PostgreSQL Database)]
+        RLS[Row Level Security]
+    end
+
+    Browser <--> |Interactions| UI
+    Browser --> |Requests| Middleware
+    UI --> |Zod Validated Payloads| API
+    
+    Middleware <--> |Session Check| Auth
+    Middleware --> |Passes Request| RSC
+    
+    RSC --> |Direct DB Queries| DB
+    API --> |Mutations| DB
+    
+    DB -.-> |Protected by| RLS
+```
+
 ## Getting Started
 
 ### Prerequisites
