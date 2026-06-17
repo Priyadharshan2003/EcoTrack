@@ -12,6 +12,7 @@
     "test:backend": "dotenv -e .env.local -- cd backend && pytest"
   },
   "devDependencies": {
-    "dotenv-cli": "^11.0.0"
+    "dotenv-cli": "^11.0.0",
+    "next": "16.2.9"
   }
 }
