@@ -2,7 +2,7 @@
 
 **Live Demo:** [https://eco-track-omega-azure.vercel.app/](https://eco-track-omega-azure.vercel.app/)
 
-CarbonTrack is a production-grade carbon footprint tracker that helps users log daily activities across transport, energy, food, and shopping categories, visualize emissions through interactive charts, and receive personalized reduction insights benchmarked against country averages. Built with TypeScript strict mode, Zod v4 validation, and Supabase Row-Level Security, the codebase prioritizes code quality and security at every layer. React Server Components and edge-ready architecture ensure zero client JS overhead and minimal resource utilization. A comprehensive test suite—Vitest unit tests, Playwright E2E flows, and jest-axe accessibility audits—guarantees stability across the full stack. WCAG AA contrast-safe chart palettes, skip links, ARIA roles, semantic HTML, and screen reader data table alternatives make the app fully inclusive. The solution directly addresses every requirement of the problem statement: 4-category action logging, personalized insights, gamified badges, and country benchmarking in a polished, deployable package.
+CarbonTrack is a production-grade carbon footprint tracker that helps users log daily activities across transport, energy, food, and shopping categories, visualize emissions through interactive charts, and receive personalized reduction insights. Built with TypeScript strict mode, Zod v4 validation, and Supabase Row-Level Security, the codebase prioritizes code quality and security at every layer. React Server Components and edge-ready architecture ensure zero client JS overhead and minimal resource utilization. A comprehensive test suite—Vitest unit tests and Playwright E2E flows—guarantees stability across the full stack. WCAG AA contrast-safe chart palettes, semantic HTML, and responsive layouts make the app highly accessible. The solution provides a seamless 4-category action logging experience and dynamic personalized insights in a polished, deployable package.
 
 ## Screenshots
 
@@ -14,9 +14,7 @@ CarbonTrack is a production-grade carbon footprint tracker that helps users log 
 
 - **Carbon Action Logging** — Log daily activities across Transport, Energy, Food, and Shopping categories
 - **Dashboard** — Visualize emissions over time and category breakdowns with interactive charts
-- **Personalized Insights** — AI-powered tips, comparisons against country averages, and trend analysis
-- **Gamification** — Earn badges for streaks, low emissions, green transport choices, and more
-- **Country Benchmarking** — Compare your daily average against CO2 averages for US, UK, Germany, India, Australia, and others
+- **Personalized Insights** — AI-powered tips and trend analysis based on your carbon footprint
 - **Secure Auth** — Email-based sign-up/login with Supabase Auth and row-level security
 
 ## Tech Stack
@@ -29,7 +27,7 @@ CarbonTrack is a production-grade carbon footprint tracker that helps users log 
 | Database | Supabase (PostgreSQL) |
 | Validation | Zod v4 |
 | Charts | Recharts v3 |
-| Unit Tests | Vitest + Testing Library + jest-axe |
+| Unit Tests | Vitest + Testing Library |
 | E2E Tests | Playwright |
 | Deployment | Vercel |
 
@@ -99,24 +97,21 @@ Open http://localhost:3000.
 ```text
 src/
 ├── app/                    # Next.js App Router pages
-│   ├── (auth)/             # Login & signup (in progress)
-│   ├── (protected)/        # Dashboard, actions, insights, goals, settings
-│   └── api/actions/        # Carbon actions API (CRUD)
+│   ├── (protected)/        # Dashboard, actions, insights, map, settings
+│   ├── api/                # API routes for insights
+│   └── demo/               # Public demo preview mode
 ├── components/
 │   ├── ui/                 # shadcn/ui primitives (Button, etc.)
 │   ├── charts/             # Recharts-based data visualizations
-│   ├── badges/             # Badge/gamification components
 │   ├── landing/            # Landing page sections
-│   └── layout/             # Header, skip links, focus manager
+│   └── tracking/           # Carbon tracking specific components
 ├── lib/
-│   ├── carbon/             # Insights engine, badges, benchmarks, calculator
-│   ├── supabase/           # Client, server, and middleware helpers
-│   ├── validators/         # Zod schemas for API input validation
-│   └── utils/              # Chart colors, rate limiting, error helpers
+│   ├── carbon/             # Calculator, categories, emission factors
+│   └── supabase/           # Client, server, and middleware helpers
 ├── types/                  # TypeScript interfaces
 └── middleware.ts           # Supabase session refresh + route protection
 
-__tests__/                  # Unit & component tests
+tests/                      # Unit & component tests
 e2e/                        # Playwright E2E specs
 supabase/schema.sql         # Full database schema + RLS policies
 ```
@@ -128,7 +123,7 @@ supabase/schema.sql         # Full database schema + RLS policies
 ```bash
 npm test
 ```
-Covers the insights engine, Zod schema validation, and component accessibility (jest-axe).
+Covers the carbon calculation models, insights engine, and Zod schema validation.
 
 **E2E tests:**
 
