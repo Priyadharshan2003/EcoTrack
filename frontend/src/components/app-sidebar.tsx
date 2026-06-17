@@ -18,7 +18,7 @@ import {
 const items = [
   {
     title: "Overview",
-    url: "/",
+    url: "/dashboard",
     icon: LayoutDashboard,
   },
   {
@@ -56,8 +56,10 @@ const items = [
 export function AppSidebar() {
   const pathname = usePathname();
 
+  if (pathname === "/") return null;
+
   return (
-    <Sidebar className="border-r border-foreground/5 bg-background/50 backdrop-blur-xl">
+    <Sidebar className="border-r border-border bg-background/50 backdrop-blur-xl">
       <SidebarHeader className="p-6">
         <Link href="/" className="flex items-center gap-3 font-bold text-2xl group">
           <div className="bg-primary/20 p-2 rounded-xl group-hover:bg-primary/30 transition-colors">
@@ -113,7 +115,7 @@ export function AppSidebar() {
         <div className="bg-foreground/5 border border-foreground/10 p-4 rounded-2xl backdrop-blur-md">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-accent p-0.5">
-              <div className="w-full h-full bg-black rounded-full flex items-center justify-center">
+              <div className="w-full h-full bg-background rounded-full flex items-center justify-center">
                 <span className="text-foreground font-bold text-sm">PRO</span>
               </div>
             </div>

@@ -1,54 +1,118 @@
 import { GoogleGenAI } from "@google/genai";
 import { NextResponse } from "next/server";
+import { calculateCarbon, calculateTotal, calculateBreakdown, CarbonInput } from "@/lib/carbon/calculator";
+import { z } from "zod";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+export const runtime = 'edge';
 
-const fallbackInsights = [
-  {
-    id: "fb-1",
-    title: "Energy Optimization",
-    description: "Switching to LED bulbs in your living room could reduce your monthly footprint.",
-    savings: "15kg CO₂",
-    icon: "Zap",
-    color: "text-amber-400",
-    bg: "bg-amber-400/10",
-    border: "border-amber-400/20"
-  },
-  {
-    id: "fb-2",
-    title: "Commute Alternative",
-    description: "Taking the train on Tuesdays and Thursdays reduces your weekly footprint by 12%.",
-    savings: "24kg CO₂",
-    icon: "Train",
-    color: "text-blue-400",
-    bg: "bg-blue-400/10",
-    border: "border-blue-400/20"
+// AI client will be instantiated inside POST to prevent build-time crashes if API key is missing
+
+const RequestSchema = z.object({
+  userData: z.object({
+    inputs: z.array(z.object({
+      category: z.enum(["transport", "energy", "food", "shopping"]),
+      item: z.string(),
+      value: z.number(),
+      unit: z.string()
+    })).optional(),
+    totalEmissions: z.number().optional()
+  }).optional(),
+  userProfile: z.object({
+    commuteType: z.string().optional(),
+    dietType: z.string().optional(),
+    cabUsageFrequency: z.string().optional(),
+    hasCompletedOnboarding: z.boolean().optional(),
+    publicLeaderboard: z.boolean().optional(),
+    showBadges: z.boolean().optional(),
+  }).optional()
+});
+
+function generateDeterministicInsights(data: CarbonInput[], overrideTotal?: number) {
+  const breakdown = calculateCarbon(data);
+  const calculatedTotal = calculateTotal(breakdown);
+  const total = overrideTotal !== undefined ? overrideTotal : calculatedTotal;
+  const nationalAvg = 15; // 15 kg/day
+  
+  const insights = [];
+  if (total > nationalAvg) {
+    insights.push({
+      id: "fb-1",
+      title: "Above Average Footprint",
+      description: `Your footprint (${total}kg) is higher than the national daily average of ${nationalAvg}kg. Consider reducing transport emissions.`,
+      impact: "24",
+      icon: "Train",
+      color: "text-blue-400",
+      bg: "bg-blue-400/10",
+      border: "border-blue-400/20"
+    });
+  } else {
+    insights.push({
+      id: "fb-1",
+      title: "Excellent Efficiency",
+      description: `Great job! Your footprint (${total}kg) is below the national daily average of ${nationalAvg}kg.`,
+      impact: "15",
+      icon: "Zap",
+      color: "text-amber-400",
+      bg: "bg-amber-400/10",
+      border: "border-amber-400/20"
+    });
   }
-];
+  
+  return insights;
+}
 
 export async function POST(req: Request) {
+  let fallbackTotal = 0;
   try {
-    const { userData, userProfile } = await req.json();
+    const rawBody = await req.json();
+    const parsed = RequestSchema.safeParse(rawBody);
+    
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Invalid input", details: parsed.error }, { status: 400 });
+    }
+    
+    const { userData, userProfile } = parsed.data;
+
+    const dataArray: CarbonInput[] = userData?.inputs || [];
+    const breakdown = calculateCarbon(dataArray);
+    const calculatedTotal = calculateTotal(breakdown);
+    const total = userData?.totalEmissions !== undefined ? userData.totalEmissions : calculatedTotal;
+    const topCategories = calculateBreakdown(dataArray)
+      .slice(0, 2)
+      .map(([cat, val]) => `${cat}: ${val} kg CO2`)
+      .join("\n");
+      
+    fallbackTotal = total;
 
     if (!process.env.GEMINI_API_KEY) {
-      console.warn("No GEMINI_API_KEY found, using fallback insights.");
-      return NextResponse.json({ insights: fallbackInsights });
+      console.warn("No GEMINI_API_KEY found, using deterministic insights.");
+      return NextResponse.json({ insights: generateDeterministicInsights(dataArray, total) });
     }
 
+    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
     const prompt = `
-      You are EcoTrack AI, a context-aware sustainability coach.
-      User Profile: ${JSON.stringify(userProfile)}
-      Recent Data: ${JSON.stringify(userData)}
-      
-      Generate 2 highly personalized insights to help them reduce their carbon footprint.
-      The advice MUST reference their profile (e.g. if their commute is car_petrol, suggest metro; if diet is meat_heavy, suggest vegan meal prep).
-      Format the response as a JSON array of objects with the following keys:
-      - title: Short title
-      - description: 1 sentence personalized advice referencing their habits
-      - savings: estimated kg CO2 saved (use science, e.g., '85kg CO2')
-      - iconName: "Zap", "Train", "Leaf", or "Car"
-      Only output the valid JSON array.
-    `;
+You are EcoTrack AI, a context-aware sustainability coach.
+User Profile: ${JSON.stringify(userProfile)}
+
+User carbon footprint today: ${total} kg CO2
+National daily average: 15 kg CO2
+
+Top emissions:
+${topCategories}
+
+Provide:
+1. 3 personalized action items
+2. Estimated CO2 reduction for each
+3. Short description. In one of the descriptions, explicitly compare the user's footprint to the national daily average of 15 kg CO2.
+
+Format strictly as JSON:
+{
+  "actions": [
+    { "title": "", "impact": "", "description": "" }
+  ]
+}
+`;
 
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
@@ -59,14 +123,20 @@ export async function POST(req: Request) {
     });
 
     if (response.text) {
-      const generatedInsights = JSON.parse(response.text);
+      const parsed = JSON.parse(response.text);
       
-      const formattedInsights = generatedInsights.map((insight: Record<string, string>, i: number) => ({
+      interface AIAction {
+        title: string;
+        impact: string;
+        description: string;
+      }
+      
+      const formattedInsights = (parsed.actions || []).map((action: AIAction, i: number) => ({
         id: `ai-${i}`,
-        title: insight.title,
-        description: insight.description,
-        savings: insight.savings,
-        icon: insight.iconName || "Leaf",
+        title: action.title,
+        description: action.description,
+        impact: action.impact,
+        icon: "Leaf",
         color: "text-primary",
         bg: "bg-primary/10",
         border: "border-primary/20"
@@ -75,10 +145,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ insights: formattedInsights });
     }
 
-    return NextResponse.json({ insights: fallbackInsights });
+    return NextResponse.json({ insights: generateDeterministicInsights(dataArray, total) });
   } catch (error) {
     console.error("AI Generation failed:", error);
-    return NextResponse.json({ insights: fallbackInsights });
+    // Even if it fails, return deterministic insights
+    return NextResponse.json({ insights: generateDeterministicInsights([], fallbackTotal) });
   }
 }
-

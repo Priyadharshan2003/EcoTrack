@@ -1,13 +1,9 @@
-import { ClerkProvider, UserButton, SignInButton } from '@clerk/nextjs';
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/app-sidebar";
-import { auth } from '@clerk/nextjs/server';
 import { ThemeProvider } from "@/components/theme-provider";
-import { WeeklyWrap } from "@/components/weekly-wrap";
+import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,12 +20,13 @@ export const metadata: Metadata = {
   description: "AI-powered carbon tracking and offset marketplace.",
 };
 
-export default async function RootLayout({
+import { ClerkProvider } from '@clerk/nextjs'
+
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { userId } = await auth();
   return (
     <ClerkProvider>
       <html
@@ -38,26 +35,13 @@ export default async function RootLayout({
         suppressHydrationWarning
       >
         <body className="min-h-full flex flex-col">
-          <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
+          <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+            <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4 focus:bg-background focus:text-foreground">
+              Skip to main content
+            </a>
             <TooltipProvider>
-              <SidebarProvider>
-                <AppSidebar />
-                <div className="flex flex-col flex-1 w-full overflow-hidden">
-                  <header className="flex h-16 items-center border-b px-4 w-full bg-background justify-between">
-                    <div className="flex items-center gap-4">
-                      <SidebarTrigger />
-                      <h2 className="font-semibold text-lg text-foreground">Welcome back!</h2>
-                      <WeeklyWrap />
-                    </div>
-                    <div>
-                      {userId ? <UserButton /> : <SignInButton />}
-                    </div>
-                  </header>
-                  <main className="flex-1 overflow-auto p-4 md:p-6 bg-muted/50">
-                    {children}
-                  </main>
-                </div>
-              </SidebarProvider>
+              {children}
+              <Toaster />
             </TooltipProvider>
           </ThemeProvider>
         </body>

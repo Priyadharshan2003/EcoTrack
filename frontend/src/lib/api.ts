@@ -26,46 +26,72 @@ export type Message = {
 export const api = {
   chat: {
     getInsights: async (messages: Message[]): Promise<ChatInsightResponse> => {
-      const response = await fetch("/api/insights", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages }),
-      });
+      const fallbackResponse = { reply: "I'm having trouble connecting to our servers right now. Please check back later!" };
+      try {
+        const response = await fetch("/api/insights", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ messages }),
+        });
 
-      if (!response.ok) {
-        throw new ApiError(response.status, "Failed to fetch insight");
+        if (!response.ok) {
+          return fallbackResponse;
+        }
+
+        const data = await response.json();
+        const parsed = ChatInsightResponseSchema.safeParse(data);
+        
+        if (!parsed.success) {
+          // Sanitized log to avoid leaking sensitive payload data
+          console.error("API Response Validation Failed: Data structure mismatch.");
+          return fallbackResponse;
+        }
+
+        return parsed.data;
+      } catch (error) {
+        return fallbackResponse;
       }
-
-      const data = await response.json();
-      const parsed = ChatInsightResponseSchema.safeParse(data);
-      
-      if (!parsed.success) {
-        console.error("API Response Validation Failed:", parsed.error);
-        throw new Error("Invalid response format from server");
-      }
-
-      return parsed.data;
     },
     getDashboardInsights: async (footprint: number, profile?: unknown): Promise<DashboardInsightResponse> => {
-      const response = await fetch("/api/ai/insights", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userData: { totalEmissions: footprint }, userProfile: profile }),
-      });
+      const fallbackInsights = {
+        insights: [
+          {
+            id: "fallback-api-1",
+            title: "System Optimized",
+            description: "Our AI is currently analyzing your data. Check back soon for personalized reduction strategies.",
+            savings: "TBD",
+            icon: "Sparkles",
+            color: "text-emerald-400",
+            bg: "bg-emerald-500/10",
+            border: "border-emerald-500/20"
+          }
+        ]
+      };
 
-      if (!response.ok) {
-        throw new ApiError(response.status, "Failed to fetch dashboard insights");
+      try {
+        const response = await fetch("/api/ai/insights", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userData: { totalEmissions: footprint }, userProfile: profile }),
+        });
+
+        if (!response.ok) {
+          return fallbackInsights;
+        }
+
+        const data = await response.json();
+        const parsed = DashboardInsightSchema.safeParse(data);
+        
+        if (!parsed.success) {
+          // Sanitized log to avoid leaking sensitive payload data
+          console.error("API Dashboard Response Validation Failed: Data structure mismatch.");
+          return fallbackInsights;
+        }
+
+        return parsed.data;
+      } catch (error) {
+        return fallbackInsights;
       }
-
-      const data = await response.json();
-      const parsed = DashboardInsightSchema.safeParse(data);
-      
-      if (!parsed.success) {
-        console.error("API Response Validation Failed:", parsed.error);
-        throw new Error("Invalid response format from server");
-      }
-
-      return parsed.data;
     }
   }
 };

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { TreePine, Zap } from "lucide-react";
+import { TreePine, Zap, Sparkles } from "lucide-react";
 import { GlassCard } from "./ui/glass-card";
 
 export function DashboardHero() {
@@ -18,9 +18,15 @@ export function DashboardHero() {
 
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-10">
           <div className="space-y-6 max-w-lg">
-            <h2 className="text-sm font-semibold tracking-widest text-primary uppercase">
-              Monthly Impact
-            </h2>
+            <div className="flex items-center gap-3">
+              <h2 className="text-sm font-semibold tracking-widest text-primary uppercase">
+                Monthly Impact
+              </h2>
+              <span className="flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold uppercase tracking-widest bg-blue-500/10 text-blue-400 rounded-full border border-blue-500/20">
+                <Sparkles className="w-3 h-3" />
+                AI-Driven Decisions
+              </span>
+            </div>
             
             <div className="space-y-2">
               <motion.h3 

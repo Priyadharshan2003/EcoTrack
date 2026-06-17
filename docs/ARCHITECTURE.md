@@ -1,13 +1,4 @@
 # EcoTrack Platform Architecture
-
-## System Diagram
-```mermaid
-graph TD
-    Client[Next.js Client Components] --> Server[Next.js API Routes]
-    Client --> Clerk[Clerk Auth]
-    Server --> Clerk
-    Server --> Supabase[(Supabase PostgreSQL)]
-    Server --> Gemini[Google Gemini AI]
 ```
 
 ## Data Flow
@@ -21,6 +12,16 @@ graph TD
 - **carbon_entries**: id (PK), user_id (FK), activity_type, value, co2_amount, date
 - **offset_purchases**: id (PK), user_id (FK), project_name, amount_kg, cost, purchased_at
 
+
+## System Diagram
+```mermaid
+graph TD
 ## AI Logic & Fallback
 The `POST /api/insights` route attempts to call Gemini via `@google/genai`.
 If the Gemini API fails or times out, the backend will catch the error and return static, rule-based recommendations based on the user's highest emission category (e.g., "Consider reducing flights" if flight emissions > 50%).
+
+    Client[Next.js Client Components] --> Server[Next.js API Routes]
+    Client --> Clerk[Clerk Auth]
+    Server --> Clerk
+    Server --> Supabase[(Supabase PostgreSQL)]
+    Server --> Gemini[Google Gemini AI]

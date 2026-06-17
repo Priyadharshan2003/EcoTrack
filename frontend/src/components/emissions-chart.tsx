@@ -27,7 +27,7 @@ export function EmissionsChart() {
           <p className="text-sm text-foreground/50">Your carbon footprint over the last 6 months.</p>
         </div>
         
-        <div className="flex-1 min-h-[300px] w-full">
+        <div className="flex-1 min-h-[300px] w-full" aria-hidden="true">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={data} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
               <defs>
@@ -71,6 +71,23 @@ export function EmissionsChart() {
             </AreaChart>
           </ResponsiveContainer>
         </div>
+        <table className="sr-only">
+          <caption>Emission Trends over the last 6 months</caption>
+          <thead>
+            <tr>
+              <th scope="col">Month</th>
+              <th scope="col">Carbon (kg)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((row) => (
+              <tr key={row.name}>
+                <td>{row.name}</td>
+                <td>{row.carbon}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </GlassCard>
     </motion.div>
   );

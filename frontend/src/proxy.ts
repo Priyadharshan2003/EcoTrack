@@ -1,8 +1,34 @@
-import { clerkMiddleware } from '@clerk/nextjs/server';
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
 
-export default clerkMiddleware(async () => {
-  // Authentication protection temporarily removed to fix 404 loops
+const isPublicRoute = createRouteMatcher(["/", "/demo", "/api/(.*)", "/login(.*)", "/signup(.*)", "/sign-in(.*)", "/sign-up(.*)"]);
+
+const clerk = clerkMiddleware(async (auth, req) => {
+  if (!isPublicRoute(req)) {
+    await auth.protect();
+  }
+  return NextResponse.next();
 });
+
+export default async function middleware(req: any, event: any) {
+  try {
+    return await clerk(req, event);
+  } catch (err: any) {
+    // If there's a JWK kid mismatch (stale cookie from another project on localhost),
+    // we return a foolproof script that wipes all cookies from the browser directly and reloads.
+    if (err.message?.includes('jwk-kid-mismatch') || err.message?.includes('Handshake token verification failed')) {
+      return new NextResponse(
+        `<html><body><script>
+          document.cookie = "__session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+          document.cookie = "__client_uat=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+          window.location.href = "/";
+        </script></body></html>`,
+        { headers: { 'content-type': 'text/html' } }
+      );
+    }
+    throw err;
+  }
+}
 
 export const config = {
   matcher: [

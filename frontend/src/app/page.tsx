@@ -1,191 +1,76 @@
-"use client";
+import { HeroV2 } from "@/components/landing/hero-v2";
+import { ThemeSwitcher } from "@/components/theme-switcher";
+import { GetStartedButton } from "@/components/landing/get-started-button";
+import { SignInButton } from "@clerk/nextjs";
+import Link from "next/link";
+import dynamic from "next/dynamic";
 
-import { DashboardHero } from "@/components/dashboard-hero";
-import { AIInsightsPanel } from "@/components/ai-insights-panel";
-import { DailyInsightFlow } from "@/components/daily-insight-flow";
-import { GlassCard } from "@/components/ui/glass-card";
-import { Leaf, Zap, Flame, HeartPulse, Bike, CheckCircle2 } from "lucide-react";
-import { motion } from "framer-motion";
-import { useCarbonStore } from "@/store/useCarbonStore";
-import { usePassiveSuggestions } from "@/hooks/usePassiveSuggestions";
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
+const BentoGridV2 = dynamic(() => import("@/components/landing/bento-grid-v2").then(mod => mod.BentoGridV2));
+const DashboardCarouselV2 = dynamic(() => import("@/components/landing/dashboard-carousel-v2").then(mod => mod.DashboardCarouselV2));
+const HowItWorksV2 = dynamic(() => import("@/components/landing/how-it-works-v2").then(mod => mod.HowItWorksV2));
+const SocialProofV2 = dynamic(() => import("@/components/landing/social-proof-v2").then(mod => mod.SocialProofV2));
+const CtaSectionV2 = dynamic(() => import("@/components/landing/cta-section-v2").then(mod => mod.CtaSectionV2));
 
-export default function Dashboard() {
-  const router = useRouter();
-  const { profile, currentStreak } = useCarbonStore();
-  const { suggestions, confirmSuggestion, dismissSuggestion } = usePassiveSuggestions();
-
-  useEffect(() => {
-    // Optional: Only redirect to onboarding if specifically required
-  }, [profile.hasCompletedOnboarding, router]);
-
+export default function LandingPage() {
   return (
-    <div className="max-w-7xl mx-auto space-y-8 pb-20">
+    <div className="relative min-h-screen bg-background text-foreground selection:bg-emerald-500/30 overflow-x-hidden font-sans">
       
-      {/* Invisible Header & Streak Continuum */}
-      <div className="flex items-center justify-between px-2">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight text-foreground">Overview</h1>
-          <p className="text-foreground/50 font-medium mt-1">Your personal sustainability ecosystem.</p>
-        </div>
-        <div className="flex items-center gap-6">
-          <div className="flex flex-col items-end">
-            <div className="flex items-center gap-2">
-              <Flame className="w-5 h-5 text-orange-500" />
-              <span className="font-bold text-foreground text-lg">{currentStreak} Day</span>
-            </div>
-            <span className="text-xs text-foreground/40 font-semibold uppercase tracking-wider">Top 5% in City</span>
-          </div>
-        </div>
+      {/* Global Background Elements */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute inset-0 opacity-[0.02] mix-blend-overlay" />
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-        {/* Left Column - Impact & Integrations */}
-        <div className="xl:col-span-2 flex flex-col gap-8">
-          <DashboardHero />
-
-          {/* Passive Suggestions Section */}
-          {suggestions.length > 0 && (
-            <div>
-              <h3 className="text-lg font-semibold text-foreground/80 tracking-tight mb-4 px-2">Passive Suggestions</h3>
-              <div className="grid grid-cols-1 gap-4">
-                {suggestions.map((sug) => (
-                  <motion.div
-                    key={sug.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                  >
-                    <GlassCard className="p-4 flex items-center justify-between border-primary/20 bg-primary/5">
-                      <div className="flex items-center gap-4">
-                        <div className="bg-primary/20 p-2.5 rounded-full">
-                          <CheckCircle2 className="w-5 h-5 text-primary" />
-                        </div>
-                        <div>
-                          <p className="font-semibold text-foreground/90">{sug.message}</p>
-                          <p className="text-xs font-medium text-foreground/50 mt-1">Est. Impact: {sug.impact} kg CO₂</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm" onClick={() => dismissSuggestion(sug.id)}>
-                          Dismiss
-                        </Button>
-                        <Button size="sm" onClick={() => confirmSuggestion(sug.id)}>
-                          Confirm
-                        </Button>
-                      </div>
-                    </GlassCard>
-                  </motion.div>
-                ))}
-              </div>
+      {/* Navigation */}
+      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/50 backdrop-blur-xl">
+        <div className="container mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center shadow-[0_0_15px_rgba(52,211,153,0.4)]">
+              <div className="w-3 h-3 bg-white rounded-full" />
             </div>
-          )}
-
-          {/* Ambient Tracking Apple Style */}
-          <div>
-            <h3 className="text-lg font-semibold text-foreground/80 tracking-tight mb-4 px-2">Ambient Tracking</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
-              >
-                <GlassCard className="p-6 flex flex-col justify-between h-full hover:scale-[1.02] transition-transform duration-300">
-                  <div className="flex items-center justify-between mb-8">
-                    <div className="flex items-center gap-3">
-                      <div className="bg-red-500/10 p-2.5 rounded-2xl">
-                        <HeartPulse className="w-6 h-6 text-red-500" />
-                      </div>
-                      <span className="font-semibold text-foreground/80">Apple Health</span>
-                    </div>
-                    <span className="text-xs font-semibold px-3 py-1 bg-foreground/5 rounded-full text-foreground/50">Synced Just Now</span>
-                  </div>
-                  <div>
-                    <div className="flex items-baseline gap-2 mb-1">
-                      <span className="text-3xl font-semibold text-foreground">8,432</span>
-                      <span className="text-foreground/50 font-medium">steps today</span>
-                    </div>
-                    <p className="text-sm font-medium text-primary bg-primary/10 inline-flex px-3 py-1 rounded-lg">
-                      Avoided 1.2 kg CO₂ vs driving
-                    </p>
-                  </div>
-                </GlassCard>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-              >
-                <GlassCard className="p-6 flex flex-col justify-between h-full hover:scale-[1.02] transition-transform duration-300">
-                  <div className="flex items-center justify-between mb-8">
-                    <div className="flex items-center gap-3">
-                      <div className="bg-[#FC4C02]/10 p-2.5 rounded-2xl">
-                        <Bike className="w-6 h-6 text-[#FC4C02]" />
-                      </div>
-                      <span className="font-semibold text-foreground/80">Strava</span>
-                    </div>
-                    <span className="text-xs font-semibold px-3 py-1 bg-foreground/5 rounded-full text-foreground/50">Synced 2h ago</span>
-                  </div>
-                  <div>
-                    <div className="flex items-baseline gap-2 mb-1">
-                      <span className="text-3xl font-semibold text-foreground">12.4</span>
-                      <span className="text-foreground/50 font-medium">km cycling</span>
-                    </div>
-                    <p className="text-sm font-medium text-primary bg-primary/10 inline-flex px-3 py-1 rounded-lg">
-                      Avoided 2.3 kg CO₂ vs driving
-                    </p>
-                  </div>
-                </GlassCard>
-              </motion.div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column - Intelligence Layer */}
-        <div className="flex flex-col gap-8">
-          {/* Gemini Daily Flow */}
-          <DailyInsightFlow />
-
-          <div className="flex-1 min-h-[300px]">
-            <AIInsightsPanel />
+            <span className="font-bold text-xl tracking-tight">EcoTrack</span>
           </div>
           
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-          >
-            <GlassCard className="p-6">
-              <h3 className="text-lg font-semibold text-foreground/80 tracking-tight mb-6">Recent Impact</h3>
-              <div className="space-y-6">
-                <div className="flex items-center gap-4 group">
-                  <div className="bg-primary/10 p-3 rounded-2xl">
-                    <Leaf className="w-5 h-5 text-primary" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-semibold text-foreground/90">Tree Planted</p>
-                    <p className="text-foreground/50 text-sm font-medium">Amazon Reforestation</p>
-                  </div>
-                  <div className="font-semibold text-primary">-100 kg</div>
-                </div>
-                <div className="flex items-center gap-4 group">
-                  <div className="bg-accent/10 p-3 rounded-2xl">
-                    <Zap className="w-5 h-5 text-accent" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-semibold text-foreground/90">Smart Thermostat</p>
-                    <p className="text-foreground/50 text-sm font-medium">Inferred via API</p>
-                  </div>
-                  <div className="font-semibold text-accent">-12 kg</div>
-                </div>
-              </div>
-            </GlassCard>
-          </motion.div>
+          <div className="flex items-center gap-4 md:gap-6">
+            <ThemeSwitcher />
+            <SignInButton forceRedirectUrl="/dashboard">
+              <button className="hidden md:block text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+                Sign In
+              </button>
+            </SignInButton>
+            <GetStartedButton 
+              text="Get Started" 
+              className="h-9 px-4 text-sm bg-primary text-primary-foreground hover:bg-primary/90 rounded-full font-semibold"
+            />
+          </div>
         </div>
-      </div>
+      </nav>
+
+      {/* Main Content */}
+      <main id="main-content" className="relative z-10 pt-16">
+        <HeroV2 />
+        <BentoGridV2 />
+        <SocialProofV2 />
+        <HowItWorksV2 />
+        <DashboardCarouselV2 />
+        <CtaSectionV2 />
+      </main>
+
+      {/* Footer */}
+      <footer className="border-t border-border bg-background py-12 relative z-10">
+        <div className="container mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <div className="w-5 h-5 rounded-full bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center opacity-50">
+              <div className="w-1.5 h-1.5 bg-white rounded-full" />
+            </div>
+            <span>© {new Date().getFullYear()} EcoTrack Systems. All rights reserved.</span>
+          </div>
+          <div className="flex gap-6">
+            <Link href="#" className="hover:text-foreground transition-colors">Privacy</Link>
+            <Link href="#" className="hover:text-foreground transition-colors">Terms</Link>
+            <Link href="#" className="hover:text-foreground transition-colors">Twitter</Link>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
