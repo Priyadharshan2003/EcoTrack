@@ -169,7 +169,3 @@ Tests the full user journey: sign up → log action → view dashboard, plus key
 ## Deployment
 
 The project is pre-configured for Vercel. Push to your connected repo and Vercel will auto-deploy.
-
-## License
-
-Private project.
